@@ -1,0 +1,71 @@
+body { 
+  font-family: arial; 
+  font-size: 14px; 
+  background-color: #EEEEDD;
+  width: 960px; 
+  margin: 0 auto;
+  margin-top: 0.9em; margin-bottom: 0.9em;
+}
+
+.map { padding: 1em; background-color: #EEEEDD; border: 1px solid #CCC; max-width: 655px; }
+.map input { font-family: Arial; }
+.map p { margin-top: 0.9em; margin-bottom: 0.9em; }
+
+#map {
+  float:left;
+  width:600px;
+  height:400px;
+}
+
+#sidebar {
+  float:right;
+  width:350px;
+}
+
+#main {
+  padding-top:20px;
+  clear:both;
+  background: #EEEEDD;
+  float:center;
+}
+
+#footer {
+  clear:both;
+  background:#EEEEDD;
+  float:center;
+}
+
+table { 
+/*  border: 2px solid #CCCCCC; */
+  border-collapse: collapse;
+  width: 250px;
+  font-family: Cambria, Cochin, Georgia, serif;
+  font-size: 14px;
+}
+
+table, td, th {
+  border:1px solid black;
+}
+
+table td:nth-of-type(1), table th:nth-of-type(1) {
+  width: 75px;
+}
+
+table th {
+  font-weight: bold;
+  font-size: 16px;
+/*  background-color: #DDE9FF; */
+}
+
+table tr:nth-of-type(2n + 2) {
+  background-color: gray;
+}
+table tr:nth-of-type(2n + 1) {
+  background-color: #E0E0E0; 
+}
+
+.hover {background: #082d47;}
+
+table tr:hover {background: #082d47;}
+
+/* td, th { min-width: 150px;} */

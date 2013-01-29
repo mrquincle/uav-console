@@ -1,0 +1,57 @@
+<script type="text/javascript" src="/jquery-1.6.3.min.js"></script>
+<script type="text/javascript" src="/jquery.tmpl.js"></script>
+<script type="text/javascript" src="/knockout-2.2.0.js"></script>
+<script type="text/javascript" src="/google.js?sensor=false"></script>
+
+<link rel="stylesheet" href="style.css" />
+
+<h1>UAV Swarm Operator Console</h1>
+
+<div id="map"></div> 
+
+
+<div id="sidebar">
+<table>
+  <thead>
+    <tr><th>Name</th><th>Latitude</th><th>Longitude</th></tr>
+  </thead>
+  <tbody data-bind="foreach: points">
+    <tr style="cursor-pointer;" data-bind="event: {mouseover: hovered, mouseleave: unhovered}, 
+	click: $root.goToUAV" class="">
+      <td data-bind="text: name"></td>
+      <td data-bind="text: lat"></td>
+      <td data-bind="text: long"></td>
+    </tr>
+  </tbody>
+</table>
+
+<!--
+-->
+<p>
+<!-- ko if: chosenUAVId -->
+Current UAV: <span data-bind="text: $root.chosenUAVId()"></span>
+<!-- /ko -->
+</p>
+
+<button data-bind="click: abortMission, enable: chosenUAVId">Abort Mission</button>
+<button data-bind="click: startLanding, enable: chosenUAVId">Land!</button>
+
+<!-- only over API
+<button data-bind="click: addUAV">Add UAV</button>
+-->
+</div>
+
+<div id="main">
+<h2>Short introduction</h2>
+<p>This operator console allows you to see where the UAVs currently are located, plus it gives you the
+ability to select UAVs to give them operator commands like "abort mission", "land", etc.</p>
+</div>
+
+<div id="footer">
+<hr>
+<center>
+Copyright (c) 2013 | Almende B.V. | DO bots B.V. | FireSwarm | Funded by AgentSchap NL
+<center>
+</div>
+
+<script type="text/javascript" src="/model.js"></script>
