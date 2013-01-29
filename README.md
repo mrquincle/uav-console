@@ -17,7 +17,7 @@ The following installation instructions are okay for Ubuntu or Debian-based syst
 * npm install -d # uses information from package.json to install the required packages in node_modules
 * firefox http://localhost:8082
 
-It seems to be (http://www.futurealoof.com/posts/nodemodules-in-git.html "practice") to commit also node modules in the nodejs community, hence I did. It should accelerate your install and "npm install -d" should get you even more uptodate if you want to.
+It seems to be [practice](http://www.futurealoof.com/posts/nodemodules-in-git.html) to commit also node modules in the nodejs community, hence I did. It should accelerate your install and "npm install -d" should get you even more uptodate if you want to.
 
 ## Copyrights
 The copyrights (2012) belong to:
