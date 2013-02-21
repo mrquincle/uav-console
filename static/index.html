@@ -2,6 +2,7 @@
 <script type="text/javascript" src="/jquery.tmpl.js"></script>
 <script type="text/javascript" src="/knockout-2.2.0.js"></script>
 <script type="text/javascript" src="/google.js?sensor=false"></script>
+<script type="text/javascript" src="/proj4js.js"></script>
 
 <link rel="stylesheet" href="style.css" />
 
@@ -21,6 +22,19 @@
       <td data-bind="text: name"></td>
       <td data-bind="text: lat"></td>
       <td data-bind="text: long"></td>
+    </tr>
+  </tbody>
+</table>
+</br>
+<table>
+  <thead>
+    <tr><th>Parameter</th><th>Value</th></tr>
+  </thead>
+  <tbody data-bind="foreach: droneparameters">
+   <!-- <tr style="cursor-pointer;" data-bind="event: {mouseover: hovered, mouseleave: unhovered}, 
+	click: $root.goToUAV" class=""> -->
+      <td data-bind="text: parameter"></td>
+      <td data-bind="text: value"></td>
     </tr>
   </tbody>
 </table>
