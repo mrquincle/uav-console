@@ -6,45 +6,16 @@ function droneparameter(parameter, value) {
 }
 
 /*
-http://gis.stackexchange.com/questions/5265/using-the-proj4js-library-to-convert-from-google-maps-to-projected-values
-http://www.spatialmarkets.com/blog/2012/2/29/proj4js-and-on-the-fly-coordinate-conversion.html
-*/
-
-//collects the X and the Y in state plane, and returns a point with the lat/lng in it...
-// check http://spatialreference.org/ref/epsg/32633/
-// from http://www.dmap.co.uk/utmworld.htm we are in zone 31U and not 31Q
-function ConvertStatePlane(x,y) {
-	//Proj4js.defs["EPSG:3419"] = "+proj=lcc +lat_1=39.78333333333333 +lat_2=38.71666666666667 +lat_0=38.33333333333334 +lon_0=-98 +x_0=399999.99998984 +y_0=0 +ellps=GRS80 +datum=NAD83 +to_meter=0.3048006096012192 +no_defs";
-	Proj4js.defs["GOOGLE"]="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs";
- 	Proj4js.defs["EPSG:4326"] = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
-	Proj4js.defs["EPSG:41001"] = "+title=simple mercator EPSG:41001 +proj=merc +lat_ts=0 +lon_0=0 +k=1.000000 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m";
-	//Proj4js.defs["SR-ORG:111"] = "+proj=utm +zone=31 +ellps=clrk66 +units=m +no_defs";
-
-	//var source = new Proj4js.Proj('EPSG:3419');
-	//var dest = new Proj4js.Proj('EPSG:4326');
-	//var source = new Proj4js.Proj('SR-ORG:111'); // UTM
-	var source = new Proj4js.Proj("EPSG:41001"); // UTM
-	var dest = new Proj4js.Proj('EPSG:4326'); // Google maps
-    //var dest = new Proj4js.Proj("GOOGLE");
-            
-	var point = new Proj4js.Point(x,y);
-	Proj4js.transform(source,dest,point);
-
-	alert("Transformed: " + point.y + "," + point.x);  
-
-	return point;
-}
-
-/*
  Currently the function name "point" is a misnomer. It should be a drone object
  */
 function point(name, lat, long) {
     var self = this;
-//    self.id = ko.observable(id);
     self.name = ko.observable(name);
     self.lat = ko.observable(lat);
     self.long = ko.observable(long);
 
+	self.parameters = ko.observableArray([]);
+    
     var marker = new google.maps.Marker({
         position: new google.maps.LatLng(lat, long),
         title: name,
@@ -74,6 +45,12 @@ function point(name, lat, long) {
     self.startLanding = function() {
 		alert("Landing started for " + self.name() + "...");
     };
+
+	self.setlatlong = function(lat,long) {
+		var decimals = 6;
+        self.lat(Math.round(lat*Math.pow(10,decimals))/Math.pow(10,decimals));
+        self.long(Math.round(long*Math.pow(10,decimals))/Math.pow(10,decimals));		
+	};
 
     google.maps.event.addListener(marker, 'mouseover', function() {
         /* what should I put here to highlight corresponding row depending on hovered  marker? */
@@ -107,15 +84,12 @@ function DroneViewModel() {
     self.chosenUAVId = ko.observable();
     self.chosenUAV = ko.observable();
 
-    self.points = ko.observableArray([
-        new point('UAV 1', 51.445, 4.34),
-        new point('UAV 2', 51.448, 4.344),
-        new point('UAV 3', 51.450, 4.338),
-        new point('UAV 4', 51.443, 4.337)])
+	self.points = ko.observableArray([]);
+//    self.points = ko.observableArray([
+        //new point('UAV 8', 51.445, 4.34),
+        //new point('UAV 9', 51.448, 4.344)])
 
-	self.droneparameters = ko.observableArray([
-		new droneparameter('Name','anonymous')
-	])
+	self.droneparameters = ko.observableArray([]);
 
     // mission abort of all selected planes
     self.abortMission = function() {
@@ -133,30 +107,130 @@ function DroneViewModel() {
     };
 
     self.addUAV = function(name, x, y) {
-    	var coord = ConvertStatePlane(x,y);
-        self.points.push(new point(name, coord.x, coord.y));
+        //alert("Add drone: " + name + " at lat/long " + x + "," + y);
+    	var drone = new point(name, x, y);
+        self.points.push(drone);
+        drone.setlatlong(x,y);
+        if (self.getDroneCount() > 0) {
+        	//alert("Drone properly added");
+        } else {
+        	alert("Adding drone went wrong");
+        }
     };
 
-	self.loadUAVs = function () {
-		$.getJSON('drone/0', function (dronelist) {
+    self.droneUpdate = function(name, x, y) {
+    	var point = self.getDrone(name);
+    	point.setlatlong(x,y);
+    };
+    
+    self.droneExists = function(name) {
+    	for (var i = 0; i < self.points.length; i++) {
+    		if (self.points[i].name() == name) {
+    			return true;
+    		}
+    	}
+    	return false;
+    };
+    
+    self.getDroneCount = function(name) {
+    	return self.points().length;
+    };
+    
+    self.getDrone = function(name) {
+    	for (var i = 0; i < self.getDroneCount(); i++) {
+    		if (self.points()[i].name() == name) {
+    			return self.points()[i];
+    		}
+    	}
+    	alert("Error! You should've called droneExists first.");
+    };
+    
+    self.selectDrone = function(index) {
+		self.chosenUAVId() = index;
+		var name = "UAV " + index;
+		var drone = self.getDrone(name);
+		
+		//self.droneparameters = [];
+		alert("Number of drone parameters: " + drone.parameters().length);
+		self.droneparameters.removeAll();
+		self.droneparameters = drone.parameters;
+    };
+    
+    self.loadParameters = function(droneparam) {
+    	//alert("Reload all parameters");
+		self.droneparameters.removeAll();
+		$.each(droneparam, function (field, value) {
+			self.droneparameters.push(new droneparameter(field, value));
+		});    	
+    }
+
+	self.loadUAVr = function (index) {
+		var url = 'drone/' + index;
+		$.getJSON(url, function (droneparam) {
 			self.droneparameters.removeAll();
-			$.each(dronelist, function (field, value) {
+			$.each(droneparam, function (field, value) {
 				self.droneparameters.push(new droneparameter(field, value));
-			});
-			self.addUAV('Test', 8900, 10180);
-			//for (var i = 0; i < dronelist.length; i++) {
-				if (droneparameters.uav_id == 0) {
-					self.addUAV(uav_id, uav_x, uav_y);
+				if (field == "uav_id") {
+					var name = "UAV " + droneparam.uav_id;
+					if (self.droneExists(name)) {
+						self.droneUpdate(name, droneparam.uav_x, droneparam.uav_y);
+					} else {
+						self.addUAV(name, droneparam.uav_x, droneparam.uav_y);
+					}
 				}
-			//}			
+			});
 		});
 	};
-};
-	
 
+	self.loadUAV = function (index) {
+		var url = 'drone/' + index;
+		$.getJSON(url, function (droneparam) {
+			var name = "UAV " + index;
+			self.addUAV(name, droneparam.uav_x, droneparam.uav_y);
+			self.loadParameters(droneparam);
+			var drone = self.getDrone(name);
+			drone.parameters = self.droneparameters;
+			self.selectDrone(index);
+		});
+	};
+	
+	self.loadUAVs = function () {
+		$.getJSON('drone', function (dronelist) {
+			//alert("Load this number of drones: " + dronelist.length);
+			self.points.removeAll();
+			for (var i = 0; i < dronelist.length; i++) {
+				var droneparam = dronelist[i];
+				var index = droneparam.uav_id;
+				var name = "UAV " + index;
+				self.addUAV(name, droneparam.uav_x, droneparam.uav_y);
+				self.loadParameters(droneparam);
+				var drone = self.getDrone(name);
+				drone.parameters = self.droneparameters;
+			}
+
+			var drone_count = self.getDroneCount();
+			if (drone_count > 0) {
+				//alert("Select drone 0");
+				self.selectDrone(0);
+			} else {
+				alert("No drone information available for loading!");
+			}
+			
+		});
+	};
+	
+};
 
 $(function () {
 	my = { viewModel: new DroneViewModel() };
 	ko.applyBindings(my.viewModel);
-    my.viewModel.loadUAVs();
+	my.viewModel.loadUAVs();
+	//my.viewModel.loadUAV(0);
+	
+	function update() {
+	    // retrieve data again
+	    my.viewModel.loadUAVs();
+	    setTimeout(update, 1000);
+	}
+	update();
 });
