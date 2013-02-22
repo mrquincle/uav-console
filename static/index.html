@@ -25,7 +25,7 @@
     </tr>
   </tbody>
 </table>
-</br>
+<br/>
 <table>
   <thead>
     <tr><th>Parameter</th><th>Value</th></tr>
@@ -47,8 +47,23 @@ Current UAV: <span data-bind="text: $root.chosenUAVId()"></span>
 <!-- /ko -->
 </p>
 
+<br/>
+<table>
+  <thead>
+    <tr><th>Command</th><th>Value</th></tr>
+  </thead>
+  <tbody data-bind="foreach: dronecommands">
+      <td data-bind="text: parameter"></td>
+      <td><input data-bind="value: value"/></td>
+    </tr>
+  </tbody>
+</table>
+
+<!--
 <button data-bind="click: abortMission, enable: chosenUAVId">Abort Mission</button>
 <button data-bind="click: startLanding, enable: chosenUAVId">Land!</button>
+-->
+<button data-bind="click: sendCommand">Execute!</button>
 
 <!-- only over API
 <button data-bind="click: addUAV">Add UAV</button>

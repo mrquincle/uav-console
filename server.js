@@ -7,6 +7,12 @@ var express    = require('express')
 
 var drones = new Array(); 
 
+var commandState = new Array();
+
+var newCommand = new Boolean();
+
+newCommand = false;
+
 app.configure(function(){
   app.use(express.bodyParser());
   app.use(app.router);
@@ -19,8 +25,31 @@ app.post('/fire', function (request,response) {
   response.send(request.body); //echo
 });
 
-app.post('/drone/:abort', function (request,response) {
+app.post('/mission/abort/:id', function (request,response) {
   response.send(request.body); //echo
+});
+
+function getvalue(list, param) {
+	for (var i = 0; i < list.length; i++) {
+		//console.log("Param " + i + " = " + list[i].parameter);
+		if (list[i].parameter == param) {
+			return list[i].value;
+		}
+	}
+	console.log("Error: parameter '" + param + "' does not exist!");
+}
+
+
+app.post('/command', function(request,response) {
+	//console.log(request.body);
+	//console.log("Size before: " + commandState.length);
+	commandState = request.body.commandState;
+	//console.log("Size: " + commandState.length);
+	var message_id = getvalue(commandState, "message_id");
+	//var message_id = commandState.message_id;
+	console.log("Message to be forwarded: " + message_id);
+	
+	newCommand = true;
 });
 
 /*
@@ -44,6 +73,59 @@ var server = jot.createServer(cmdPort);
 
 
 server.on('connection', newConnectionHandler);
+
+function droneparameter(parameter, value) {
+	var self = this;
+	self.parameter = parameter;
+	self.value = value;
+}
+
+function getCommand() {
+	var command = new Array();
+	command.message_type = getvalue(commandState, "message_type");
+	command.version = getvalue(commandState, "version");
+	command.timestamp=getvalue(commandState, "timestamp");
+	command.uav_id=getvalue(commandState, "uav_id");
+	command.message_id=getvalue(commandState, "message_id");
+	command.min_height=getvalue(commandState, "min_height");
+	command.max_height=getvalue(commandState, "max_height");
+	command.area_min_x=getvalue(commandState, "area_min_x");
+	command.area_min_y=getvalue(commandState, "area_min_y");
+	command.area_dx=getvalue(commandState, "area_dx");
+	command.area_dy=getvalue(commandState, "area_dy");
+	command.area_rotation=getvalue(commandState, "area_rotation");
+	command.land_x=getvalue(commandState, "land_x");
+	command.land_y=getvalue(commandState, "land_y");
+	command.land_heading=getvalue(commandState, "land_heading");
+	command.turn=getvalue(commandState, "turn");
+	command.auto_pilot_mode=getvalue(commandState, "auto_pilot_mode");
+	command.enable_planner=getvalue(commandState, "enable_planner");
+
+	return command;
+};
+
+
+function initialize() {
+	commandState = [];
+	commandState.push(new droneparameter("message_type","cmd"));
+	commandState.push(new droneparameter("version",1));
+	commandState.push(new droneparameter("timestamp","2013-02-06T13:37:00.0000Z"));
+	commandState.push(new droneparameter("uav_id",10));
+	commandState.push(new droneparameter("message_id",1));
+	commandState.push(new droneparameter("min_height",50));
+	commandState.push(new droneparameter("max_height",100));
+	commandState.push(new droneparameter("area_min_x",9000));
+	commandState.push(new droneparameter("area_min_y",9500));
+	commandState.push(new droneparameter("area_dx",1000));
+	commandState.push(new droneparameter("area_dy",3000));
+	commandState.push(new droneparameter("area_rotation",0));
+	commandState.push(new droneparameter("land_x",9050));
+	commandState.push(new droneparameter("land_y",9550));
+	commandState.push(new droneparameter("land_heading",4.7124));
+	commandState.push(new droneparameter("turn",true));
+	commandState.push(new droneparameter("auto_pilot_mode",0));
+	commandState.push(new droneparameter("enable_planner",1));
+};
 
 function droneExists(uav_id) {
 	console.log("Find drone: " + uav_id);
@@ -80,15 +162,22 @@ function newConnectionHandler(socket){
 		drone.uav_x = gps.latitude;
 		drone.uav_y = gps.longitude;
 		
-		// Wait one second, then write an answer to the client's socket
+		// Wait 250ms, then write an answer to the client's socket
 		setTimeout(function(){
-			socket.write({answer: 42});
-		}, 1000);
+			if (newCommand) {
+				var cmd = getCommand();
+				socket.write(cmd);
+				console.log("Send command to the groundstation!!!!!");
+			}
+			newCommand = false;
+		}, 250);
 	});  
 };
 
 // Start listening
 server.listen(cmdPort);
+
+initialize();
 
 process.on('uncaughtException', function(err) {
 	console.log(JSON.stringify(err));

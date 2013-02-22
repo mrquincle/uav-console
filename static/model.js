@@ -85,11 +85,10 @@ function DroneViewModel() {
     self.chosenUAV = ko.observable();
 
 	self.points = ko.observableArray([]);
-//    self.points = ko.observableArray([
-        //new point('UAV 8', 51.445, 4.34),
-        //new point('UAV 9', 51.448, 4.344)])
 
 	self.droneparameters = ko.observableArray([]);
+
+	self.dronecommands = ko.observableArray([]);
 
     // mission abort of all selected planes
     self.abortMission = function() {
@@ -104,6 +103,42 @@ function DroneViewModel() {
     self.goToUAV = function(uav) {
        self.chosenUAVId(uav.name);
        self.chosenUAV(uav);
+    };
+
+	self.getValue = function(list, param) {
+		for (var i = 0; i < list().length; i++) {
+			if (list()[i].parameter() == param) 
+				return list()[i].value();
+		}
+		alert("Error: parameter '" + param + "' does not exist!");
+	}
+
+	self.setValue = function(list, param, value) {
+		for (var i = 0; i < list().length; i++) {
+			if (list()[i].parameter() == param) { 
+				list()[i].value(value);
+				return;
+			}
+		}
+		alert("Error: parameter '" + param + "' does not exist!");
+	}
+
+    self.sendCommand = function() {
+    	//alert("Number of command parameters: " + self.dronecommands().length);
+    	//alert("Send command with version " + self.getValue(self.dronecommands, "version"));
+    	var message_id = self.getValue(self.dronecommands, "message_id");
+    	var new_id = (parseInt(message_id) + 1).toString();
+    	self.setValue(self.dronecommands, "message_id", new_id);
+    	var arr = self.dronecommands();
+    	//alert("Send command!");
+		//$.post("/command", arr, function(returnedData) {
+		//	alert("Command is send to the server!");	    
+		//})
+		$.ajax({
+  			url: 'http://localhost:8080/command',
+  			data: {commandState: arr},
+  			type: 'POST'
+		});
     };
 
     self.addUAV = function(name, x, y) {
@@ -213,12 +248,33 @@ function DroneViewModel() {
 				//alert("Select drone 0");
 				self.selectDrone(0);
 			} else {
-				alert("No drone information available for loading!");
-			}
-			
+				//alert("No drone information available for loading!");
+			}	
 		});
 	};
-	
+
+	self.initCommandState = function() {
+		//alert("Number of drone command parameters: " + self.dronecommands().length);
+		self.dronecommands.removeAll();
+		self.dronecommands.push(new droneparameter("message_type","cmd"));
+		self.dronecommands.push(new droneparameter("version",1));
+		self.dronecommands.push(new droneparameter("timestamp","2013-02-06T13:37:00.0000Z"));
+		self.dronecommands.push(new droneparameter("uav_id",10));
+		self.dronecommands.push(new droneparameter("message_id",1));
+		self.dronecommands.push(new droneparameter("min_height",50));
+		self.dronecommands.push(new droneparameter("max_height",100));
+		self.dronecommands.push(new droneparameter("area_min_x",9000));
+		self.dronecommands.push(new droneparameter("area_min_y",9500));
+		self.dronecommands.push(new droneparameter("area_dx",1000));
+		self.dronecommands.push(new droneparameter("area_dy",3000));
+		self.dronecommands.push(new droneparameter("area_rotation",0));
+		self.dronecommands.push(new droneparameter("land_x",9050));
+		self.dronecommands.push(new droneparameter("land_y",9550));
+		self.dronecommands.push(new droneparameter("land_heading",4.7124));
+		self.dronecommands.push(new droneparameter("turn",true));
+		self.dronecommands.push(new droneparameter("auto_pilot_mode",0));
+		self.dronecommands.push(new droneparameter("enable_planner",1));
+	};
 };
 
 $(function () {
@@ -226,6 +282,7 @@ $(function () {
 	ko.applyBindings(my.viewModel);
 	my.viewModel.loadUAVs();
 	//my.viewModel.loadUAV(0);
+	my.viewModel.initCommandState();
 	
 	function update() {
 	    // retrieve data again
