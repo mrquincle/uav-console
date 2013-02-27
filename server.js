@@ -65,7 +65,9 @@ app.get('/drone', function (request,response) {
 	response.send(droneJSON); 
 });
 
-app.listen(process.argv[2]||8080);
+var guiPort = 8080;
+
+app.listen(process.argv[2]||guiPort);
 
 var cmdPort = 8082;
 
@@ -183,5 +185,5 @@ process.on('uncaughtException', function(err) {
 	console.log(JSON.stringify(err));
 });
 
-console.log('Start firefox and point it to http://localhost:8082');
+console.log('Start firefox and point it to http://localhost:' + guiPort);
 
