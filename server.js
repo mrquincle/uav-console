@@ -156,13 +156,17 @@ function newConnectionHandler(socket){
 		if (!droneExists(data.uav_id)) {
 			drones.push(data);
 		}
-		var drone = getDrone(data.uav_id);
-		drone = data;
+		var index = 0;
+		for (var i = 0; i < drones.length; i++) {
+			if (drones[i].uav_id == data.uav_id) 
+				index = i;
+		}
+		drones[index] = data;
 		
-		var gps = utmtogps(drone.uav_y, drone.uav_x, 31);
+		var gps = utmtogps(drones[index].uav_y, drones[index].uav_x, 31);
 		console.log(gps);
-		drone.uav_x = gps.latitude;
-		drone.uav_y = gps.longitude;
+		drones[index].uav_x = gps.latitude;
+		drones[index].uav_y = gps.longitude;
 		
 		// Wait 250ms, then write an answer to the client's socket
 		setTimeout(function(){
