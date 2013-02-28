@@ -161,8 +161,8 @@ function newConnectionHandler(socket){
 		
 		var gps = utmtogps(drone.uav_x, drone.uav_y, 31);
 		console.log(gps);
-		drone.uav_x = gps.latitude;
-		drone.uav_y = gps.longitude;
+		drone.uav_x = gps.longitude;
+		drone.uav_y = gps.latitude;
 		
 		// Wait 250ms, then write an answer to the client's socket
 		setTimeout(function(){
