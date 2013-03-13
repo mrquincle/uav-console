@@ -138,6 +138,7 @@ function DroneViewModel() {
 	self.points = ko.observableArray([]);
 	self.droneparameters = ko.observableArray([]); // Used by html
 	self.dronecommands = ko.observableArray([]); // Used by html
+	var initialized=false;
 	
 	var areaLine = new google.maps.Polyline({
 		title: "area",
@@ -157,6 +158,7 @@ function DroneViewModel() {
        self.chosenUAV().startLanding();
     };
 
+    // when click in the table this updates the selected UAV
     self.goToUAV = function(uav) {
 		self.chosenUAVId(uav.name);
 		self.chosenUAV(uav);
@@ -251,7 +253,7 @@ function DroneViewModel() {
 				var name = "UAV " + id;
 				
 				if (self.uavExists(name)) {
-					// Update uav
+					// Update of the uav is done below
 				} else {
 					// Add uav
 					self.addUAV(name, droneparam.uav_x, droneparam.uav_y);
@@ -260,7 +262,17 @@ function DroneViewModel() {
 				var uav = self.getUAV(name);
 				uav.parameters = droneparam;
 				uav.update();
-				self.loadParameters(droneparam);				
+				
+				if (!initialized) {
+					self.goToUAV(uav );
+					initialized = true;
+				}
+				
+				if (name == self.chosenUAVId()() ) {
+					self.goToUAV(uav );
+				} else {
+					//alert ("Current name " + name + " does not match " + self.chosenUAVId()() );
+				}
 			}
 
 /*
