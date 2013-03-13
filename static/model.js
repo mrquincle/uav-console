@@ -249,18 +249,18 @@ function DroneViewModel() {
 				var droneparam = dronelist[i];
 				var id = droneparam.uav_id;
 				var name = "UAV " + id;
+				
 				if (self.uavExists(name)) {
 					// Update uav
-				}
-				else {
+				} else {
 					// Add uav
 					self.addUAV(name, droneparam.uav_x, droneparam.uav_y);
 					
 				}
-				var uav = self.getUAV(name)
+				var uav = self.getUAV(name);
 				uav.parameters = droneparam;
 				uav.update();
-				//self.loadParameters(droneparam);
+				self.loadParameters(droneparam);				
 			}
 
 /*
@@ -355,6 +355,7 @@ $(function () {
 	    my.viewModel.loadUAVs();
 	    my.viewModel.drawField();
 	    setTimeout(update, 1000);
-	}
+	}				
+	
 	update();
 });
