@@ -59,21 +59,12 @@ Current UAV: <span data-bind="text: $root.chosenUAVId()"></span>
     <tr><th>Parameter</th><th>Value</th></tr>
   </thead>
   <tbody data-bind="foreach: droneparameters">
-   <!-- <tr style="cursor-pointer;" data-bind="event: {mouseover: hovered, mouseleave: unhovered}, 
-	click: $root.goToUAV" class=""> -->
       <td data-bind="text: parameter"></td>
       <td data-bind="text: value"></td>
     </tr>
   </tbody>
 </table>
 
-<!--
-<button data-bind="click: abortMission, enable: chosenUAVId">Abort Mission</button>
-<button data-bind="click: startLanding, enable: chosenUAVId">Land!</button>
--->
-<!-- only over API
-<button data-bind="click: addUAV">Add UAV</button>
--->
 </div>
 
 </div>
