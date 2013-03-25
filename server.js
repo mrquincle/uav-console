@@ -2,6 +2,7 @@ var express    = require('express')
   , app        = module.exports = express.createServer()
   , converter  = require('coordinator')
   , utmtogps   = converter('utm', 'latlong') 
+  , gpstoutm   = converter('latlong', 'utm') 
   , jot        = require('json-over-tcp')
   ;
 
@@ -222,12 +223,23 @@ function newConnectionHandler(socket){
 	});  
 };
 
+function calcregion() {
+	var lat = 51;
+	var long = 4;
+	var utm = gpstoutm(lat, long, 31);
+        console.log("Easting: " + utm.easting);
+        console.log("Northing: " + utm.northing);
+};
+
 // Start listening
 server.listen(cmdPort);
+
+calcregion();
 
 initialize();
 
 process.on('uncaughtException', function(err) {
+	
 	console.log(JSON.stringify(err));
 });
 
